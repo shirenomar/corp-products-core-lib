@@ -1,0 +1,18 @@
+@if (loaderService.isLoading$ | async; as data) {
+  @if (data.show) {
+    <div
+      class="fixed inset-0 z-[1111] flex justify-center items-center"
+      [ngClass]="{
+       'bg-white/75': data?.isSystemLoader,
+       'absolute': !data?.isSystemLoader
+     }"
+      >
+      <div class="text-center flex flex-col gap-5 items-center">
+        <div
+          class="animate-spin inline-block w-12 h-12 border-[3px] border-current border-t-transparent text-gray-800 rounded-full">
+        </div>
+        <span>{{ 'loading' | translate }}</span>
+      </div>
+    </div>
+  }
+}

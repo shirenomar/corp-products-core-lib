@@ -1,0 +1,9 @@
+<div class="flex items-center justify-center flex-col h-full gap-4 w-full">
+  <img [src]="imageSrc" alt="no-access" class="h-[300px]" />
+  <strong class="text-secondary font-size-22">{{ "oops" | translate }}</strong>
+  <p class="font-size-22 text-gray-500">{{ "do_not_have_permission" | translate }}</p>
+
+  <!-- @if (authService.isUserLoggedIn$ | async) {
+    <app-button (click)="router.navigate(['/'])" [title]="'home' | translate"/>
+  } -->
+</div>
