@@ -1,0 +1,24 @@
+{
+  "name": "@corp-products/app-core",
+  "version": "3.0.3",
+  "author": "shireen Omar",
+  "description": "shared core services across our apps",
+  "peerDependencies": {
+    "@angular/common": ">=17.0.0 <21.0.0",
+    "@angular/core": ">=17.0.0 <21.0.0",
+    "primeng": ">=17.0.0 <21.0.0",
+    "jwt-decode": "^4.0.0"
+  },
+  "dependencies": {
+    "tslib": "^2.3.0"
+  },
+  "keywords": [
+    "angular",
+    "library"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "license": "MIT",
+  "sideEffects": false
+}
