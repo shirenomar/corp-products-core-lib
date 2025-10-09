@@ -1,10 +1,9 @@
 import { Inject, Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { StorageHandler } from '../handlers/storage-handler';
-import { LocalStorageKeys } from '../handlers/stortage';
+import { CookiesStorageKeys, LocalStorageKeys } from '../handlers/stortage';
 import { CORE_CONFIG, CoreConfig } from '../core-config';
 import { BaseHttpService, HttpConfig } from './base-http-service';
-import { CookieService } from 'ngx-cookie-service';
 
 @Injectable({
   providedIn: 'root',
@@ -12,10 +11,7 @@ import { CookieService } from 'ngx-cookie-service';
 export class AuthService extends BaseHttpService {
   public isUserLoggedIn$ = new BehaviorSubject(this.isLoggedIn());
 
-  constructor(
-    @Inject(CORE_CONFIG) protected appConfig: CoreConfig,
-    private cookieService: CookieService
-  ) {
+  constructor(@Inject(CORE_CONFIG) protected appConfig: CoreConfig) {
     super();
   }
   override setApiConfig(): HttpConfig {
@@ -43,8 +39,7 @@ export class AuthService extends BaseHttpService {
   }
 
   getUserToken(): string | null {
-    // return StorageHandler.local.get(LocalStorageKeys.TOKEN);
-    return this.cookieService.get('Authorization');
+    return StorageHandler.cookies.get(CookiesStorageKeys.AUTHORIZATION);
   }
 
   setUserToken(token?: string) {
