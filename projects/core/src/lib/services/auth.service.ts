@@ -1,12 +1,17 @@
-import { Inject, Injectable } from "@angular/core";
-import { BehaviorSubject } from "rxjs";
-import { StorageHandler } from "../handlers/storage-handler";
-import { LocalStorageKeys } from "../handlers/stortage";
-import { BaseHttpService, HttpConfig } from "./base-http-service";
-import { CORE_CONFIG, CoreConfig } from "../core-config";
+import { Inject, Injectable } from '@angular/core';
+import { BehaviorSubject } from 'rxjs';
+import { StorageHandler } from '../handlers/storage-handler';
+import { LocalStorageKeys } from '../handlers/stortage';
+import { CORE_CONFIG, CoreConfig } from '../core-config';
+import { BaseHttpService, HttpConfig } from './base-http-service';
+
+export function getCookie(name: string): string | null {
+  const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+  return match ? decodeURIComponent(match[2]) : null;
+}
 
 @Injectable({
-  providedIn: "root"
+  providedIn: 'root',
 })
 export class AuthService extends BaseHttpService {
   public isUserLoggedIn$ = new BehaviorSubject(this.isLoggedIn());
@@ -14,19 +19,18 @@ export class AuthService extends BaseHttpService {
   constructor(@Inject(CORE_CONFIG) protected appConfig: CoreConfig) {
     super();
   }
-
   override setApiConfig(): HttpConfig {
     return {
-      apiUrl: "",
-      microServiceUrl: ""
+      apiUrl: '',
+      microServiceUrl: '',
     };
   }
 
   initAuthentication() {
-    const token: string | null = new URLSearchParams(window.location.search).get("token");
+    const token: string | null = new URLSearchParams(window.location.search).get('token');
     if (token) {
       this.setAuthentication(token);
-      window.location.search = "";
+      window.location.search = '';
     }
   }
 
@@ -40,7 +44,8 @@ export class AuthService extends BaseHttpService {
   }
 
   getUserToken(): string | null {
-    return StorageHandler.local.get(LocalStorageKeys.TOKEN);
+    // return StorageHandler.local.get(LocalStorageKeys.TOKEN);
+    return getCookie('Authorization');
   }
 
   setUserToken(token?: string) {
@@ -49,8 +54,8 @@ export class AuthService extends BaseHttpService {
 
   logoutFromSSO() {
     const logoutUrl = this.appConfig.logoutEndpoint;
-    return this.single<unknown>("", {
-      urlRewrite: logoutUrl
+    return this.single<unknown>('', {
+      urlRewrite: logoutUrl,
     });
   }
 
