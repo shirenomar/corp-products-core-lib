@@ -4,11 +4,7 @@ import { StorageHandler } from '../handlers/storage-handler';
 import { LocalStorageKeys } from '../handlers/stortage';
 import { CORE_CONFIG, CoreConfig } from '../core-config';
 import { BaseHttpService, HttpConfig } from './base-http-service';
-
-export function getCookie(name: string): string | null {
-  const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-  return match ? decodeURIComponent(match[2]) : null;
-}
+import { CookieService } from 'ngx-cookie-service';
 
 @Injectable({
   providedIn: 'root',
@@ -16,7 +12,10 @@ export function getCookie(name: string): string | null {
 export class AuthService extends BaseHttpService {
   public isUserLoggedIn$ = new BehaviorSubject(this.isLoggedIn());
 
-  constructor(@Inject(CORE_CONFIG) protected appConfig: CoreConfig) {
+  constructor(
+    @Inject(CORE_CONFIG) protected appConfig: CoreConfig,
+    private cookieService: CookieService
+  ) {
     super();
   }
   override setApiConfig(): HttpConfig {
@@ -45,7 +44,7 @@ export class AuthService extends BaseHttpService {
 
   getUserToken(): string | null {
     // return StorageHandler.local.get(LocalStorageKeys.TOKEN);
-    return getCookie('Authorization');
+    return this.cookieService.get('Authorization');
   }
 
   setUserToken(token?: string) {
