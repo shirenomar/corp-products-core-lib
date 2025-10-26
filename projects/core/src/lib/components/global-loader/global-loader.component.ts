@@ -11,6 +11,6 @@ import {LoaderService} from "../../services";
   imports: [AsyncPipe, NgClass, TranslatePipe]
 })
 export class GlobalLoaderComponent {
-  @Input() color: string;
+  @Input() color!: string;
   constructor(public loaderService: LoaderService) {}
 }
