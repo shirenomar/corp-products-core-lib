@@ -1,8 +1,7 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from "@angular/core/testing";
+import { GlobalLoaderComponent } from "./global-loader.component";
 
-import { GlobalLoaderComponent } from 'libs/core/src/lib/core/components/global-loader/global-loader.component';
-
-describe("LoaderComponent", () => {
+describe("GlobalLoaderComponent", () => {
   let component: GlobalLoaderComponent;
   let fixture: ComponentFixture<GlobalLoaderComponent>;
 
