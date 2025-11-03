@@ -1,0 +1,4 @@
+export enum ErrorCode {
+  JWT_EXPIRED = "JWT_EXPIRED",
+  UNAUTHORIZED = "UNAUTHORIZED"
+}

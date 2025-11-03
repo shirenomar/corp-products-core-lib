@@ -9,3 +9,4 @@ export * from './lib/directives';
 export * from './lib/core-config';
 export * from './lib/handlers';
 export * from './lib/request-modifier';
+export * from './lib/error-config';
