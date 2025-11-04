@@ -1,6 +1,6 @@
 {
   "name": "@corp-products/app-core",
-  "version": "3.0.3",
+  "version": "3.0.9",
   "author": "shireen Omar",
   "description": "shared core services across our apps",
   "peerDependencies": {
