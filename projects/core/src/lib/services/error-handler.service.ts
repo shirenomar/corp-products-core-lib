@@ -17,7 +17,7 @@ export class ErrorHandlerService implements ErrorHandler {
   }
 
   handleError(error: unknown): void {
-    console.log("ErrorHandlerService", error);
+    console.log("ErrorHandlerServicee", error);
     if (error instanceof Error && !(error instanceof HttpErrorResponse)) {
       console.error(error);
       return;
@@ -26,18 +26,19 @@ export class ErrorHandlerService implements ErrorHandler {
     if (error instanceof HttpErrorResponse) {
       console.error("HTTP Error:", error);
 
-      switch (error.status) {
+      switch (error?.status) {
         case 400:
-           this.showError(`network_errors.${error.error.message}`);
+           this.showError(`codes.${error.error.errors.errorType}`);
            break
         case 401:
-          this.showError(`network_errors.${error.error.message}`);
+          //TODO : Check After Implement login
+          this.showError(`network_errors.${error.error.errors.errorType}`);
           break;
         case 404:
-          this.showError(`network_errors.${error.error?.message}`);
+          this.showError(`network_errors.${error.error.errors.errorType}`);
           break;
         case 403:
-          this.showError("error.forbidden.message");
+          this.showError("forbidden.message");
           break;
         case 500:
           this.showError("validation_error.server");
@@ -51,8 +52,8 @@ export class ErrorHandlerService implements ErrorHandler {
 
   private showError(messageKey: string): void {
     this.toasterService.error({
-      title: this.translateService.instant("error"),
-      message: this.translateService.instant(messageKey),
+      title: this.translateService.instant("error.title"),
+      message: this.translateService.instant(`error.${messageKey}`),
     });
   }
 }
