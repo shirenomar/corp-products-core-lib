@@ -1,15 +1,19 @@
 import { HttpClient } from '@angular/common/http';
-import { inject } from '@angular/core';
+import { Inject, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { HttpConfig, HttpOptions, ServiceConfig } from './base-http-types';
 import { epmDefaultMapper, extractRequestOptions, mapResponse, resolveUrl } from './base-http-utils';
+import { CORE_CONFIG, CoreConfig } from '../../core-config';
 
 export abstract class BaseHttpService {
   private readonly http: HttpClient = inject(HttpClient);
 
+  constructor(@Inject(CORE_CONFIG) protected appConfig: CoreConfig) {
+
+  }
   get url(): string {
     const { apiUrl,microServiceUrl } = this.setApiConfig();
-    return `${microServiceUrl}${apiUrl ? `/${apiUrl}` : ''}`;
+    return `${this.appConfig.gatewayUrl +'/'}${microServiceUrl}${apiUrl ? `/${apiUrl}` : ''}`;
   }
 
   get methodsConfig(): ServiceConfig | undefined {
