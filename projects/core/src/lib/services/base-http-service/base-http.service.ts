@@ -55,12 +55,12 @@ export abstract class BaseHttpService {
   }
 
   update<T>(
-    id: string | number,
+    id: string | number | undefined,
     body: unknown,
     options?: HttpOptions
   ): Observable<T> {
     const activeOptions = options || this.getMethodConfig('update');
-    const url = resolveUrl(this.url, activeOptions, id?.toString());
+    const url = id? resolveUrl(this.url, activeOptions, id?.toString()) : resolveUrl(this.url, activeOptions);
     const requestOptions = { ...extractRequestOptions(activeOptions) };
 
     return this.http
