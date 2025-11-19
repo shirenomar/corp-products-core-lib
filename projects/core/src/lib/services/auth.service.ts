@@ -1,15 +1,16 @@
-import { Inject, Injectable } from '@angular/core';
+import { inject, Inject, Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
-import { StorageHandler } from '../handlers/storage-handler';
 import { CookiesStorageKeys, LocalStorageKeys } from '../handlers/stortage';
 import { CORE_CONFIG, CoreConfig } from '../core-config';
 import { BaseHttpService, HttpConfig } from './base-http-service';
+import { StorageService } from '../services';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService extends BaseHttpService {
   public isUserLoggedIn$ = new BehaviorSubject(this.isLoggedIn());
+  public storageService = inject(StorageService);
 
   constructor(@Inject(CORE_CONFIG) protected appConfig: CoreConfig) {
     super();
@@ -39,11 +40,11 @@ export class AuthService extends BaseHttpService {
   }
 
   getUserToken(): string | null {
-    return StorageHandler.cookies.get(CookiesStorageKeys.AUTHORIZATION);
+    return this.storageService.cookies.get(CookiesStorageKeys.AUTHORIZATION);
   }
 
   setUserToken(token?: string) {
-    return StorageHandler.local.set(LocalStorageKeys.TOKEN, token);
+    return this.storageService.local.set(LocalStorageKeys.TOKEN, token);
   }
 
   logoutFromSSO() {
@@ -54,8 +55,8 @@ export class AuthService extends BaseHttpService {
   }
 
   clearAuth() {
-    StorageHandler.local.clear();
-    StorageHandler.session.clear();
+    this.storageService.local.clear();
+    this.storageService.session.clear();
     this.isUserLoggedIn$.next(false);
     window.location.href = this.appConfig.loginUrl;
   }

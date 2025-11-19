@@ -6,3 +6,4 @@ export * from './permissions.service';
 export * from './auth.service';
 export * from './loader.service';
 export * from './detect-device.service';
+export * from './storage.service';
