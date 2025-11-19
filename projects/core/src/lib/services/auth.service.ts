@@ -57,6 +57,7 @@ export class AuthService extends BaseHttpService {
   clearAuth() {
     this.storageService.local.clear();
     this.storageService.session.clear();
+    this.storageService.cookies.clear(CookiesStorageKeys.AUTHORIZATION);
     this.isUserLoggedIn$.next(false);
     window.location.href = this.appConfig.loginUrl;
   }
