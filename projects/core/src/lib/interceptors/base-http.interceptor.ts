@@ -40,7 +40,6 @@ export class HttpBaseInterceptor implements HttpInterceptor {
     request: HttpRequest<unknown>,
     next: HttpHandler
   ): Observable<HttpEvent<unknown>> {
-    console.log('interceptor', this.appConfig);
     request = this.requestModifier(request);
 
     const IS_SYSTEM_LOADER_CHECK = request.context.get(IS_SYSTEM_LOADER);
