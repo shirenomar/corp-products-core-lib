@@ -7,26 +7,19 @@ import {
   StorageEnum,
 } from '../handlers/stortage';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable({ providedIn: 'root' })
 export class StorageService {
   private cookieService = inject(CookieService);
-  // ---------------------------
-  // Cookies
-  // ---------------------------
-   public get cookies() {
+
+  public get cookies() {
     return {
       set: (key: CookiesStorageKeys, value: string, expires?: number) =>
         this.cookieService.set(key, value, expires),
       get: (key: CookiesStorageKeys) => this.cookieService.get(key),
-      clear: (key: CookiesStorageKeys) => this.cookieService.delete(key)
+      clear: (key: CookiesStorageKeys) => this.cookieService.delete(key),
     };
   }
 
-  // ---------------------------
-  // Local Storage
-  // ---------------------------
   public local = {
     set: (key: LocalStorageKeys, value: unknown) =>
       this.setItem(key, value, localStorage.setItem.bind(localStorage)),
@@ -35,9 +28,6 @@ export class StorageService {
     clear: () => localStorage.clear(),
   };
 
-  // ---------------------------
-  // Session Storage
-  // ---------------------------
   public session = {
     set: (key: SessionStorageKeys, value: unknown) =>
       this.setItem(key, value, sessionStorage.setItem.bind(sessionStorage)),
@@ -46,13 +36,10 @@ export class StorageService {
     clear: () => sessionStorage.clear(),
   };
 
-  // ---------------------------
-  // Helpers
-  // ---------------------------
   private setItem(
     key: StorageEnum,
     value: unknown,
-    setFn: (key: string, value: string) => void
+    setFn: (k: string, v: string) => void
   ): void {
     if (!key) return;
     setFn(key as string, typeof value === 'string' ? value : JSON.stringify(value));
@@ -60,7 +47,7 @@ export class StorageService {
 
   private getItem<T>(
     key: StorageEnum,
-    getFn: (key: string) => string | null,
+    getFn: (k: string) => string | null,
     withParsing = false
   ): T | null {
     const data = getFn(key as string) ?? null;

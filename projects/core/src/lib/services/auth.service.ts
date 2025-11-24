@@ -4,20 +4,17 @@ import { CookiesStorageKeys, LocalStorageKeys } from '../handlers/stortage';
 import { CORE_CONFIG, CoreConfig } from '../core-config';
 import { BaseHttpService, HttpConfig } from './base-http-service';
 import { StorageService } from '../services';
-import { StorageHandler } from '../handlers/storage-handler';
-import { CookieService } from 'ngx-cookie-service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService extends BaseHttpService {
-  public isUserLoggedIn$ = new BehaviorSubject(this.isLoggedIn());
-  // cookieService = inject(CookieService);
-  // public storageService = inject(StorageService);
+  public isUserLoggedIn$ = new BehaviorSubject<boolean>(false);
+  private storageService = inject(StorageService);
 
   constructor(@Inject(CORE_CONFIG) protected appConfig: CoreConfig) {
     super();
-    // StorageHandler.init(this.cookieService);
+    this.isUserLoggedIn$.next(this.isLoggedIn());
   }
   override setApiConfig(): HttpConfig {
     return {
@@ -44,11 +41,11 @@ export class AuthService extends BaseHttpService {
   }
 
   getUserToken(): string | null {
-    return StorageHandler.cookies.get(CookiesStorageKeys.AUTHORIZATION);
+    return this.storageService.cookies.get(CookiesStorageKeys.AUTHORIZATION);
   }
 
   setUserToken(token?: string) {
-    return StorageHandler.local.set(LocalStorageKeys.TOKEN, token);
+    return this.storageService.local.set(LocalStorageKeys.TOKEN, token);
   }
 
   logoutFromSSO() {
@@ -59,9 +56,9 @@ export class AuthService extends BaseHttpService {
   }
 
   clearAuth() {
-    StorageHandler.local.clear();
-    StorageHandler.session.clear();
-    StorageHandler.cookies.clear(CookiesStorageKeys.AUTHORIZATION);
+    this.storageService.local.clear();
+    this.storageService.session.clear();
+    this.storageService.cookies.clear(CookiesStorageKeys.AUTHORIZATION);
     this.isUserLoggedIn$.next(false);
     window.location.href = this.appConfig.loginUrl;
   }
