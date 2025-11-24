@@ -3,21 +3,26 @@ import { jwtDecode } from "jwt-decode";
 import { AuthService } from "./auth.service";
 import { JWTDecoded } from "../interfaces/jwt-token-decoded.interface";
 
+
 @Injectable({
   providedIn: "root"
 })
 export class JwtDecoderService {
-  authService = inject(AuthService);
-  public decodedToken: JWTDecoded;
+  private authService = inject(AuthService);
+  public decodedToken: JWTDecoded | null = null;
 
-  constructor() {
-    this.decodeToken();
-  }
+  constructor() {}
 
-  public decodeToken() {
-    const token: string = this.authService.getUserToken() as string;
-    if (token) {
-      this.decodedToken = jwtDecode(token);
+  public decodeToken(): JWTDecoded | null {
+    const token = this.authService.getUserToken();
+    if (!token) return null;
+
+    try {
+      this.decodedToken = jwtDecode<JWTDecoded>(token);
+      return this.decodedToken;
+    } catch (err) {
+      console.error("Failed to decode token:", err);
+      return null;
     }
   }
 }
