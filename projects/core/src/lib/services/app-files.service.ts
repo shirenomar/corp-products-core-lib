@@ -5,6 +5,7 @@ import { Observable, tap } from 'rxjs';
 import { BaseHttpResponse, BaseHttpService, HttpConfig } from './base-http-service';
 import { AuthService } from './auth.service';
 import { Attachment } from '../models/attachment.interface';
+import { APP_FILES_CONFIG } from '../app-files-config';
 
 export const API_URLS = {
   UPLOAD_FILE: 'attachment',
@@ -16,14 +17,15 @@ export const API_URLS = {
 })
 export class AppFilesService extends BaseHttpService {
   authService = inject(AuthService);
+  private config = inject(APP_FILES_CONFIG);
   override setApiConfig(): HttpConfig {
     return {
-      microServiceUrl: API_URLS.UPLOAD_FILE,
+      microServiceUrl: this.config.uploadUrl,
     };
   }
 
   download(url: string, fileName: string): Observable<Blob> {
-    return this.getAll<Blob>({ urlRewrite: url, responseType: 'blob' }).pipe(
+    return this.getAll<Blob>({ urlPostfix: url, responseType: 'blob' }).pipe(
       tap((blob) => {
         const objectURL = URL.createObjectURL(blob);
         const anchorTag = document.createElement('a');
@@ -46,12 +48,12 @@ export class AppFilesService extends BaseHttpService {
 
   export(
     exportFilter: { [key: string]: string[] } | HttpParams,
-    urlRewrite: string,
+    urlPostfix: string,
     fileName: string,
     type: string = 'pdf'
   ) {
     return this.getAll<Blob>({
-      urlRewrite,
+      urlPostfix,
       params: exportFilter,
       responseType: 'blob',
     }).pipe(
