@@ -50,7 +50,8 @@ export class AppFilesService extends BaseHttpService {
     exportFilter: { [key: string]: string[] } | HttpParams,
     urlPostfix: string,
     fileName: string,
-    type: string = 'pdf'
+    type = 'pdf',
+    downloaded = true
   ) {
     return this.getAll<Blob>({
       urlPostfix,
@@ -58,11 +59,13 @@ export class AppFilesService extends BaseHttpService {
       responseType: 'blob',
     }).pipe(
       tap((response) => {
-        const blob = new Blob([response], { type: `application/${type}` });
-        const link = document.createElement('a');
-        link.href = window.URL.createObjectURL(blob);
-        link.download = fileName;
-        link.click();
+        if(downloaded){
+          const blob = new Blob([response], { type: `application/${type}` });
+          const link = document.createElement('a');
+          link.href = window.URL.createObjectURL(blob);
+          link.download = fileName;
+          link.click();
+        }
       })
     );
   }
