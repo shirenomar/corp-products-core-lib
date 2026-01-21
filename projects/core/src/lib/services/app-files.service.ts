@@ -29,7 +29,9 @@ import {
 import { APP_FILES_CONFIG } from '../app-files-config';
 import { UploadStatus } from '../enums/upload-status.enum';
 
-export const UPLOAD_STATUS_CONFIG = new InjectionToken<UploadStatusConfigMap>('UPLOAD_STATUS_CONFIG');
+export const UPLOAD_STATUS_CONFIG = new InjectionToken<UploadStatusConfigMap>(
+  'UPLOAD_STATUS_CONFIG',
+);
 @Injectable({
   providedIn: 'root',
 })
@@ -101,6 +103,7 @@ export class AppFilesService extends BaseHttpService {
     urlPostfix: string,
     fileName: string,
     type: string = 'pdf',
+    downloaded = true,
   ): Observable<Blob> {
     return this.getAll<Blob>({
       urlPostfix,
@@ -108,8 +111,10 @@ export class AppFilesService extends BaseHttpService {
       responseType: 'blob',
     }).pipe(
       tap((response) => {
-        const blob = new Blob([response], { type: `application/${type}` });
-        this.triggerBrowserDownload(blob, fileName);
+        if (downloaded) {
+          const blob = new Blob([response], { type: `application/${type}` });
+          this.triggerBrowserDownload(blob, fileName);
+        }
       }),
     );
   }
