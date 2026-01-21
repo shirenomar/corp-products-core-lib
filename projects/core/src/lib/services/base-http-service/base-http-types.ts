@@ -19,7 +19,7 @@ export type HttpRequestOptions = {
   params?: HttpParams | { [param: string]: string | string[] } | Params;
   context?: HttpContext;
   reportProgress?: boolean;
-  observe?: 'events';
+  observe?: 'events' | 'response';
   responseType?: string;
 };
 export const HttpRequestOptionsKeys: Array<keyof Required<HttpRequestOptions>> =
