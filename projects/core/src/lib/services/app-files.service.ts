@@ -124,7 +124,7 @@ export class AppFilesService extends BaseHttpService {
     this.triggerBrowserDownload(blob, fileData.fileName);
   }
 
-  createAttachmentWithStatus(
+  createAttachment(
     file: File,
     uploadStatus: UploadStatus,
     progress: number = 0,
@@ -168,16 +168,6 @@ export class AppFilesService extends BaseHttpService {
 
   private calculateProgress(loaded: number, total?: number): number {
     return total ? Math.round((100 * loaded) / total) : 0;
-  }
-
-  private createAttachment(file: File, status: UploadStatus, progress = 0): Attachment {
-    return {
-      nameFile: file.name,
-      size: file.size,
-      file,
-      uploadStatus: status,
-      status: this.buildStatusDisplay(status, progress),
-    };
   }
 
   private buildStatusDisplay(
