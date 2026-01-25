@@ -1,17 +1,37 @@
-import { inject, Injectable } from '@angular/core';
-import { HttpEvent, HttpParams } from '@angular/common/http';
+import { Inject, inject, Injectable, InjectionToken } from '@angular/core';
+import {
+  HttpEvent,
+  HttpEventType,
+  HttpHeaders,
+  HttpParams,
+  HttpResponse,
+} from '@angular/common/http';
 import { HttpContextHandler } from '../handlers/http-context-handler';
-import { Observable, tap } from 'rxjs';
+import {
+  catchError,
+  from,
+  identity,
+  map,
+  mergeMap,
+  Observable,
+  of,
+  Subject,
+  takeUntil,
+  tap,
+} from 'rxjs';
 import { BaseHttpResponse, BaseHttpService, HttpConfig } from './base-http-service';
 import { AuthService } from './auth.service';
-import { Attachment } from '../models/attachment.interface';
+import {
+  Attachment,
+  AttachmentStatusDisplay,
+  UploadStatusConfigMap,
+} from '../models/attachment.interface';
 import { APP_FILES_CONFIG } from '../app-files-config';
+import { UploadStatus } from '../enums/upload-status.enum';
 
-export const API_URLS = {
-  UPLOAD_FILE: 'attachment',
-  DOWNLOAD_FILE: (id: string) => `attachment/${id}`,
-};
-
+export const UPLOAD_STATUS_CONFIG = new InjectionToken<UploadStatusConfigMap>(
+  'UPLOAD_STATUS_CONFIG',
+);
 @Injectable({
   providedIn: 'root',
 })
@@ -24,57 +44,168 @@ export class AppFilesService extends BaseHttpService {
     };
   }
 
-  download(url: string, fileName: string): Observable<Blob> {
-    return this.getAll<Blob>({ urlPostfix: url, responseType: 'blob' }).pipe(
-      tap((blob) => {
-        const objectURL = URL.createObjectURL(blob);
-        const anchorTag = document.createElement('a');
-        anchorTag.href = objectURL;
-        anchorTag.download = fileName;
-        document.body.appendChild(anchorTag);
-        anchorTag.click();
-        document.body.removeChild(anchorTag);
-      })
+  constructor(@Inject(UPLOAD_STATUS_CONFIG) protected uploadStatusConfig: UploadStatusConfigMap) {
+    super();
+  }
+
+  download(url: string, attachmentIds: string[], fileName?: string): Observable<Blob> {
+    return this.add<HttpResponse<Blob>>(attachmentIds, {
+      urlPostfix: url,
+      responseType: 'blob',
+      observe: 'response',
+    }).pipe(
+      tap((response) => {
+        if (response.body) {
+          const headerFileName = this.extractFileNameFromHeaders(response.headers) ?? 'file';
+          this.triggerBrowserDownload(response.body, fileName ?? headerFileName);
+        }
+      }),
+      map((response) => response.body!),
     );
   }
 
-  uploadFile(formData: FormData) {
-    return this.add<HttpEvent<BaseHttpResponse<Attachment>>>(formData, {
+  upload<TResponse = unknown>(
+    file: File,
+    url: string,
+  ): Observable<HttpEvent<BaseHttpResponse<TResponse>>> {
+    const formData = new FormData();
+    formData.append('file', file, file.name);
+
+    return this.add<HttpEvent<BaseHttpResponse<TResponse>>>(formData, {
       context: HttpContextHandler.setLoaderType(false),
+      urlPostfix: url,
       reportProgress: true,
       observe: 'events',
     });
   }
 
+  uploadMultiple<TResponse = unknown>(
+    files: File[],
+    url: string,
+    maxConcurrent = 10,
+    destroy$?: Subject<void>,
+  ): Observable<Attachment> {
+    return from(files).pipe(
+      mergeMap(
+        (file) =>
+          this.upload<TResponse>(file, url).pipe(
+            map((event) => this.mapHttpEventToAttachment(file, event)),
+            catchError(() => of(this.createAttachment(file, UploadStatus.FAILED))),
+          ),
+        maxConcurrent,
+      ),
+      destroy$ ? takeUntil(destroy$) : identity,
+    );
+  }
+
   export(
-    exportFilter: { [key: string]: string[] } | HttpParams,
+    exportFilter: Record<string, string[]> | HttpParams,
     urlPostfix: string,
     fileName: string,
-    type = 'pdf',
-    downloaded = true
-  ) {
+    type: string = 'pdf',
+    downloaded = true,
+  ): Observable<Blob> {
     return this.getAll<Blob>({
       urlPostfix,
       params: exportFilter,
       responseType: 'blob',
     }).pipe(
       tap((response) => {
-        if(downloaded){
+        if (downloaded) {
           const blob = new Blob([response], { type: `application/${type}` });
-          const link = document.createElement('a');
-          link.href = window.URL.createObjectURL(blob);
-          link.download = fileName;
-          link.click();
+          this.triggerBrowserDownload(blob, fileName);
         }
-      })
+      }),
     );
   }
 
-  downloadFile(fileData: { content: Blob; type: string; fileName: string }) {
+  downloadFile(fileData: { content: Blob; type: string; fileName: string }): void {
     const blob = new Blob([fileData.content], { type: fileData.type });
+    this.triggerBrowserDownload(blob, fileData.fileName);
+  }
+
+  createAttachment(
+    file: File,
+    uploadStatus: UploadStatus,
+    progress: number = 0,
+    serverResponse?: unknown,
+  ): Attachment {
+    return {
+      nameFile: file.name,
+      size: file.size,
+      file,
+      uploadStatus,
+      status: this.buildStatusDisplay(uploadStatus, progress),
+      serverResponse,
+    };
+  }
+
+  private mapHttpEventToAttachment<TResponse>(
+    file: File,
+    event: HttpEvent<BaseHttpResponse<TResponse>>,
+  ): Attachment {
+    switch (event.type) {
+      case HttpEventType.UploadProgress: {
+        const progress = this.calculateProgress(event.loaded, event.total);
+        return this.createAttachment(file, UploadStatus.UPLOADING, progress);
+      }
+
+      case HttpEventType.Response: {
+        const response = event.body?.payload;
+        const serverPayload = response as Record<string, unknown> | undefined;
+        const baseAttachment = this.createAttachment(file, UploadStatus.SUCCESS, 100);
+        return {
+          ...baseAttachment,
+          id: serverPayload?.['id'] as string | undefined,
+          serverResponse: response,
+        };
+      }
+
+      default:
+        return this.createAttachment(file, UploadStatus.PENDING);
+    }
+  }
+
+  private calculateProgress(loaded: number, total?: number): number {
+    return total ? Math.round((100 * loaded) / total) : 0;
+  }
+
+  private buildStatusDisplay(
+    uploadStatus: UploadStatus,
+    progress?: number,
+  ): AttachmentStatusDisplay {
+    const config = this.uploadStatusConfig.get(uploadStatus);
+
+    return {
+      ...config,
+      percentage: progress,
+    } as AttachmentStatusDisplay;
+  }
+
+  // get filename from response headers
+  private extractFileNameFromHeaders(headers: HttpHeaders): string | null {
+    const contentDisposition = headers.get('content-disposition');
+    if (!contentDisposition) return null;
+
+    const filenamePart = contentDisposition
+      .split(';')
+      .map((part) => part.trim())
+      .find((part) => part.toLowerCase().startsWith('filename='));
+
+    if (!filenamePart) return null;
+
+    const filename = filenamePart.split('=')[1]?.trim();
+    return filename ?? null;
+  }
+
+  private triggerBrowserDownload(blob: Blob, fileName: string): void {
+    const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    link.href = window.URL.createObjectURL(blob);
-    link.download = fileData.fileName;
+    link.href = url;
+    link.download = fileName;
+    document.body.appendChild(link);
     link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
   }
 }
