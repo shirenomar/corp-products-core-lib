@@ -48,14 +48,15 @@ export class AppFilesService extends BaseHttpService {
     super();
   }
 
-  download(url: string, attachmentIds: string[], fileName?: string): Observable<Blob> {
-    return this.add<HttpResponse<Blob>>(attachmentIds, {
+  download(url: string, attachmentIds: string[], fileName?: string, previewOnly= false): Observable<Blob> {
+    const body = { attachmentIds };
+    return this.add<HttpResponse<Blob>>(body, {
       urlPostfix: url,
       responseType: 'blob',
       observe: 'response',
     }).pipe(
       tap((response) => {
-        if (response.body) {
+        if (response.body && !previewOnly) {
           const headerFileName = this.extractFileNameFromHeaders(response.headers) ?? 'file';
           this.triggerBrowserDownload(response.body, fileName ?? headerFileName);
         }
@@ -198,7 +199,7 @@ export class AppFilesService extends BaseHttpService {
     return filename ?? null;
   }
 
-  private triggerBrowserDownload(blob: Blob, fileName: string): void {
+   triggerBrowserDownload(blob: Blob, fileName: string): void {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
