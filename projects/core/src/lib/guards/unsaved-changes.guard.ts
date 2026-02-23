@@ -5,10 +5,6 @@ export interface CanComponentDeactivate {
   canDeactivate: () => boolean | Observable<boolean> | Promise<boolean>;
 }
 
-export const unsavedChangesGuard: CanDeactivateFn<CanComponentDeactivate> = (component) => {
-  if (!component?.canDeactivate) {
-    return true;
-  }
-
-  return component.canDeactivate();
+export const canDeactivateGuard: CanDeactivateFn<CanComponentDeactivate> = (component) => {
+  return component.canDeactivate ? component.canDeactivate() : true;
 };
