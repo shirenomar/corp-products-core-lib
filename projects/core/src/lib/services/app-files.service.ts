@@ -48,7 +48,12 @@ export class AppFilesService extends BaseHttpService {
     super();
   }
 
-  download(url: string, attachmentIds: string[], fileName?: string, previewOnly= false): Observable<Blob> {
+  download(
+    url: string,
+    attachmentIds: string[],
+    fileName?: string,
+    previewOnly = false,
+  ): Observable<Blob> {
     const body = { attachmentIds };
     return this.add<HttpResponse<Blob>>(body, {
       urlPostfix: url,
@@ -191,15 +196,27 @@ export class AppFilesService extends BaseHttpService {
     const filenamePart = contentDisposition
       .split(';')
       .map((part) => part.trim())
-      .find((part) => part.toLowerCase().startsWith('filename='));
+      .find(
+        (part) =>
+          part.toLowerCase().startsWith('filename=') || part.toLowerCase().startsWith('filename*='),
+      );
 
     if (!filenamePart) return null;
 
-    const filename = filenamePart.split('=')[1]?.trim();
-    return filename ?? null;
+    let filename = filenamePart.split('=')[1]?.trim();
+    if (!filename) return null;
+
+    // Handle RFC5987 encoding
+    if (filename.toLowerCase().startsWith("utf-8''")) {
+      filename = decodeURIComponent(filename.substring(7));
+    }
+
+    // Strip quotes
+    filename = filename.replace(/^"|"$/g, '');
+    return filename;
   }
 
-   triggerBrowserDownload(blob: Blob, fileName: string): void {
+  triggerBrowserDownload(blob: Blob, fileName: string): void {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
