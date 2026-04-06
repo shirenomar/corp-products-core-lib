@@ -3,7 +3,7 @@ import { Params as RouterParams } from '@angular/router';
 
 export interface HttpConfig {
   apiUrl?: string;
-  microServiceUrl: string;
+  microServiceUrl?: string;
   globalMapFn?: (res: any) => any;
   methods?: ServiceConfig;
 }
