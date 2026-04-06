@@ -25,7 +25,7 @@ export class LoaderService {
       this.loadingMap.delete(url);
     }
 
-    if (!this.loadingMap.size) {
+    if (this.loadingMap.size === 0) {
       this.isLoading$.next({ show: false });
     }
   }
