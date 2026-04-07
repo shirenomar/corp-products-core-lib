@@ -7,6 +7,7 @@ export interface CoreConfig {
   gatewayUrl: string;
   loginUrl: string;
   logoutEndpoint: string;
+  withUserAuthentication?: boolean;
 }
 
 export const CORE_CONFIG = new InjectionToken<CoreConfig>("CoreConfig");

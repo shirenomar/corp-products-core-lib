@@ -12,5 +12,6 @@ export enum DateFormatter {
   MMM_D_Y = "MMM d, y",
   DD_MM = "dd MMM",
   DATE_PICKER = "dd/MM/yyyy",
-  DATE_FULL_YEAR = "yyyy"
+  DATE_FULL_YEAR = "yyyy",
+  COMPACT_DATE = "yyyyMMdd"
 }
