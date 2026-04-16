@@ -4,6 +4,7 @@ import { CookiesStorageKeys, LocalStorageKeys } from '../handlers/stortage';
 import { CORE_CONFIG, CoreConfig } from '../core-config';
 import { BaseHttpService, HttpConfig } from './base-http-service';
 import { StorageService } from '../services';
+import { UserService } from './user.service';
 
 @Injectable({
   providedIn: 'root',
@@ -11,6 +12,7 @@ import { StorageService } from '../services';
 export class AuthService extends BaseHttpService {
   public isUserLoggedIn$ = new BehaviorSubject<boolean>(false);
   private storageService = inject(StorageService);
+  private userService = inject(UserService);
 
   constructor(@Inject(CORE_CONFIG) protected appConfig: CoreConfig) {
     super();
@@ -38,6 +40,10 @@ export class AuthService extends BaseHttpService {
 
   isLoggedIn(): boolean {
     return !!this.getUserToken();
+  }
+
+  isUserExists(): boolean {
+    return !!this.userService.userData();
   }
 
   getUserToken(): string | null {
