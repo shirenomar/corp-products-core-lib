@@ -3,27 +3,30 @@ import { Params as RouterParams } from '@angular/router';
 
 export interface HttpConfig {
   apiUrl?: string;
-  microServiceUrl:string;
+  microServiceUrl: string;
   globalMapFn?: (res: any) => any;
   methods?: ServiceConfig;
 }
 
-export type Params =
-  | HttpParams
-  | { [param: string]: string | string[] | unknown };
+export type Params = HttpParams | { [param: string]: string | string[] | unknown };
 export type HttpRequestOptions = {
-  headers?:
-    | HttpHeaders
-    | RouterParams
-    | { [header: string]: string | string[] };
+  headers?: HttpHeaders | RouterParams | { [header: string]: string | string[] };
   params?: HttpParams | { [param: string]: string | string[] } | Params;
   context?: HttpContext;
   reportProgress?: boolean;
-  observe?: 'events';
+  observe?: 'events' | 'response';
   responseType?: string;
+  body?: any;
 };
-export const HttpRequestOptionsKeys: Array<keyof Required<HttpRequestOptions>> =
-  ['headers', 'params', 'context', 'reportProgress', 'observe', 'responseType'];
+export const HttpRequestOptionsKeys: Array<keyof Required<HttpRequestOptions>> = [
+  'headers',
+  'params',
+  'context',
+  'reportProgress',
+  'observe',
+  'responseType',
+  'body'
+];
 
 export type HttpOptions<T = any> = HttpRequestOptions & {
   urlRewrite?: string;
