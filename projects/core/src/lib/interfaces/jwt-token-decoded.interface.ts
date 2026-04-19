@@ -4,4 +4,5 @@ export interface JWTDecoded extends JwtPayload {
   permissions: string[];
   roles: string[];
   profile: UserProfileData;
+  departmentPermissions?:string[];
 }

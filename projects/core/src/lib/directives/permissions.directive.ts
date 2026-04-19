@@ -15,13 +15,13 @@ import { Subscription } from 'rxjs';
   standalone: true
 })
 export class HasPermissionsDirective implements OnInit, OnDestroy {
-  private _actions: string[];
-  private _key: string;
-  private _newPermissions: string[];
-  private _isDomain: boolean;
+  private _actions!: string[];
+  private _key!: string;
+  private _newPermissions!: string[];
+  private _isDomain!: boolean;
 
   private isViewCreated = false;
-  private subscription: Subscription;
+  private subscription!: Subscription;
 
   constructor(
     private permissionsService: PermissionsService,

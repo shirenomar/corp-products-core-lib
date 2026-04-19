@@ -11,8 +11,6 @@ export class JwtDecoderService {
   private authService = inject(AuthService);
   public decodedToken: JWTDecoded | null = null;
 
-  constructor() {}
-
   public decodeToken(): JWTDecoded | null {
     const token = this.authService.getUserToken();
     if (!token) return null;

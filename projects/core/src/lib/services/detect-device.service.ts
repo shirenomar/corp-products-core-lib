@@ -8,7 +8,7 @@ import { debounceTime, distinctUntilChanged, fromEvent, Observable, startWith, S
 export class DetectDeviceService {
   currentWidth: number = window.innerWidth;
   private _width$: Subject<number> = new Subject();
-  private _agent: string;
+  private _agent!: string;
   constructor() {
     fromEvent(window, "resize")
       .pipe(distinctUntilChanged(), debounceTime(200))
