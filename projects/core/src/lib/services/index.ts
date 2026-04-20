@@ -8,3 +8,4 @@ export * from './loader.service';
 export * from './detect-device.service';
 export * from './storage.service';
 export * from './app-files.service';
+export * from './user.service';

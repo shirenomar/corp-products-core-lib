@@ -14,7 +14,7 @@ import { DisplayTypesEnum } from "../enums/display-types.enum";
   standalone: true
 })
 export class ResponsiveElementDirective implements OnInit, OnDestroy {
-  @Input("responsiveElement") displayFor: DisplayTypesEnum.WEB_ONLY | DisplayTypesEnum.MOBILE_ONLY;
+  @Input("responsiveElement") displayFor!: DisplayTypesEnum.WEB_ONLY | DisplayTypesEnum.MOBILE_ONLY;
 
   private resizeSubscription: Subscription = new Subscription();
 

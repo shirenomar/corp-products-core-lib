@@ -10,12 +10,15 @@ import { AuthService } from './auth.service';
 export class ErrorHandlerService implements ErrorHandler {
   constructor(
     private injector: Injector,
-    private translateService: TranslateService,
     private authService: AuthService,
   ) {}
 
   private get toasterService(): ToasterInterface {
     return this.injector.get<ToasterInterface>(TOASTER_SERVICE);
+  }
+
+  private get translateService(): TranslateService {
+    return this.injector.get<TranslateService>(TranslateService);
   }
 
   handleError(error: unknown): void {
