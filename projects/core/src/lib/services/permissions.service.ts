@@ -1,15 +1,29 @@
-import { Injectable, inject } from "@angular/core";
+import { Injectable, computed, inject } from "@angular/core";
 import { JwtDecoderService } from "./jwt-decoder.service";
 import { PermissionsActions, UserPermissionsEnum } from "../enums";
 import {BehaviorSubject} from "rxjs";
+import { UserService } from "./user.service";
 
 @Injectable({
   providedIn: "root"
 })
 export class PermissionsService {
   private jwtDecoderService = inject(JwtDecoderService);
-  private decodedToken = this.jwtDecoderService.decodedToken;
-  private tokenPermissions = this.decodedToken ? this.decodedToken.permissions as [] : [];
+  userService = inject(UserService);
+
+  tokenPermissions = computed<string[]>(() => {
+
+    if(this.jwtDecoderService.decodedToken){
+      return this.jwtDecoderService.decodedToken ? this.jwtDecoderService.decodedToken.permissions : [];
+    }
+    const userData = this.userService.userData();
+    if (!userData) {
+      return [];
+    }
+
+    return [...(userData.permissions ?? []), ...(userData.departmentPermissions ?? [])];
+  });
+
   private domainPermissionsSubject = new BehaviorSubject<string[]>([]);
   domainPermissions$ = this.domainPermissionsSubject.asObservable();
 
@@ -23,7 +37,7 @@ export class PermissionsService {
   }
 
   getAllowedActionsByKey(key: UserPermissionsEnum, newPermissions?: string[]) {
-    const permissionsNeeded = newPermissions || this.tokenPermissions;
+    const permissionsNeeded = newPermissions || this.tokenPermissions();
     if (!permissionsNeeded) {
       console.error("There are no permissions available");
       return [];
