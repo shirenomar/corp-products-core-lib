@@ -12,3 +12,4 @@ export * from './lib/request-modifier';
 export * from './lib/error-config';
 export * from './lib/app-files-config';
 export * from './lib/models/attachment.interface';
+export * from './lib/validators';
