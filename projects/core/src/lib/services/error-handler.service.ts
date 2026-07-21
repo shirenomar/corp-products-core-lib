@@ -37,7 +37,8 @@ export class ErrorHandlerService implements ErrorHandler {
           break;
         case 401:
           //TODO : Check After Implement login
-          this.authService.clearAuth();
+          // this.authService.clearAuth();
+          console.error('Unauthorized', error);
           // this.showError(`network_errors.${error.error.errors.errorType}`);
           break;
         case 404:
