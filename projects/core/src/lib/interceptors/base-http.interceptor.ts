@@ -6,15 +6,7 @@ import {
   HttpRequest,
 } from '@angular/common/http';
 import { Inject, inject, Injectable } from '@angular/core';
-import {
-  catchError,
-  finalize,
-  Observable,
-  switchMap,
-  throwError,
-  from,
-  mergeMap
-} from 'rxjs';
+import { catchError, finalize, Observable, switchMap, throwError, from, mergeMap } from 'rxjs';
 import { IS_SYSTEM_LOADER } from '../handlers/http-context-handler';
 import { LoaderService } from '../services/loader.service';
 import { CORE_CONFIG, CoreConfig } from '../core-config';
@@ -33,8 +25,8 @@ export class HttpBaseInterceptor implements HttpInterceptor {
     @Inject(REQUEST_MODIFIER)
     protected requestModifier: (req: HttpRequest<any>) => HttpRequest<any>,
     @Inject(APP_ERROR_HANDLER)
-    private appErrorHandler: (error: any) => Observable<any>
-  ) { }
+    private appErrorHandler: (error: any) => Observable<any>,
+  ) {}
 
   intercept(
     request: HttpRequest<unknown>,
@@ -46,27 +38,39 @@ export class HttpBaseInterceptor implements HttpInterceptor {
     this.loaderService.setLoading(true, IS_SYSTEM_LOADER_CHECK, request.url);
 
     return next.handle(request).pipe(
-      catchError((err: HttpErrorResponse) => {
-        if (err?.error?.errors?.errorCode === ErrorCode.JWT_EXPIRED) {
-          this.pendingRequests.push({ req: request, next });
+      catchError((err) => {
+        const errorCode = err?.error?.errors?.errorCode;
+
+        // Only auth-expired should enter the refresh flow
+        if (errorCode !== ErrorCode.JWT_EXPIRED) {
+          if (errorCode === ErrorCode.UNAUTHORIZED) {
+            return this.appErrorHandler(err).pipe(switchMap(() => throwError(() => err)));
+          }
+          return throwError(() => err);
         }
+
+        this.pendingRequests.push({ req: request, next });
+
         if (!this.isRefreshTokenCalled) {
           this.isRefreshTokenCalled = true;
-          if (!this.appErrorHandler) return throwError(() => err);
           return this.appErrorHandler(err).pipe(
             switchMap((shouldRetry: boolean) => {
-              if (shouldRetry) {
-                this.isRefreshTokenCalled = false;
-                const queued = [...this.pendingRequests];
-                this.pendingRequests = [];
-                if (queued.length > 0) {
-                  return from(queued).pipe(
-                    mergeMap((p) => p.next.handle(p.req))
-                  );
-                }
+              this.isRefreshTokenCalled = false;
+              const queued = [...this.pendingRequests];
+              this.pendingRequests = [];
+
+              if (shouldRetry && queued.length > 0) {
+                return from(queued).pipe(
+                  mergeMap((p) => p.next.handle(p.req))
+                );
               }
               return throwError(() => err);
-            })
+            }),
+            catchError((e) => {
+              this.isRefreshTokenCalled = false;
+              this.pendingRequests = [];
+              return throwError(() => e);
+            }),
           );
         }
         return throwError(() => err);
