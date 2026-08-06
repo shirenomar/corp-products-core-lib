@@ -1,17 +1,17 @@
-import { inject, Injectable, signal, computed } from "@angular/core";
-import { JWTDecoded } from "../interfaces/jwt-token-decoded.interface";
-import { HttpClient } from "@angular/common/http";
-import { CORE_CONFIG, CoreConfig } from "../core-config";
-import { catchError, of, tap } from "rxjs";
+import { inject, Injectable, signal, computed } from '@angular/core';
+import { JWTDecoded } from '../interfaces/jwt-token-decoded.interface';
+import { HttpClient } from '@angular/common/http';
+import { CORE_CONFIG, CoreConfig } from '../core-config';
+import { catchError, of, tap } from 'rxjs';
 
 @Injectable({
-  providedIn: "root"
+  providedIn: 'root',
 })
 export class UserService {
   private http = inject(HttpClient);
   private appConfig = inject<CoreConfig>(CORE_CONFIG);
 
-  private _user = signal<JWTDecoded | null>(null);
+  public _user = signal<JWTDecoded | null>(null);
 
   public userData = computed(() => this._user());
 
@@ -24,7 +24,7 @@ export class UserService {
         console.error('App init failed', error);
         this._user.set(null);
         return of(null);
-      })
+      }),
     );
   }
 }
