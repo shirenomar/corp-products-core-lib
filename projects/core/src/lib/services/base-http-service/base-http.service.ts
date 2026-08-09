@@ -68,13 +68,13 @@ export abstract class BaseHttpService {
       .pipe(mapResponse(this.getMapFun(activeOptions)));
   }
 
-  delete<T>(id: string | number, options?: HttpOptions): Observable<T> {
+  delete<T>(id: string | number, options?: HttpOptions, body?: unknown): Observable<T> {
     const activeOptions = options || this.getMethodConfig('delete');
     const url = resolveUrl(this.url, activeOptions, id?.toString());
     const requestOptions = extractRequestOptions(activeOptions);
 
     return this.http
-      .delete<T>(url, requestOptions)
+      .delete<T>(url, { ...requestOptions, body })
       .pipe(mapResponse(this.getMapFun(activeOptions)));
   }
 
