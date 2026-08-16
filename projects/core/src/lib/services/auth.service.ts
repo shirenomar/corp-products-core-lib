@@ -1,10 +1,11 @@
-import { inject, Inject, Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { inject, Inject, Injectable, signal } from '@angular/core';
+import { BehaviorSubject, catchError, map, NEVER, tap } from 'rxjs';
 import { CookiesStorageKeys, LocalStorageKeys } from '../handlers/stortage';
 import { CORE_CONFIG, CoreConfig } from '../core-config';
 import { BaseHttpService, HttpConfig } from './base-http-service';
 import { StorageService } from '../services';
 import { UserService } from './user.service';
+import { JWTDecoded } from '../interfaces';
 
 @Injectable({
   providedIn: 'root',
@@ -13,6 +14,7 @@ export class AuthService extends BaseHttpService {
   public isUserLoggedIn$ = new BehaviorSubject<boolean>(false);
   private storageService = inject(StorageService);
   private userService = inject(UserService);
+  userData = signal<JWTDecoded | null>(null);
 
   constructor(@Inject(CORE_CONFIG) protected appConfig: CoreConfig) {
     super();
@@ -31,6 +33,19 @@ export class AuthService extends BaseHttpService {
       this.setAuthentication(token);
       window.location.search = '';
     }
+  }
+
+  getCurrentUser() {
+    return this.single<JWTDecoded>("", { urlRewrite: this.appConfig.introspection }).pipe(
+      tap((response) => {
+        this.userData.set(response);
+      }),
+      map(() => true),
+      catchError(() => {
+        window.location.href = this.appConfig.loginUrl;
+        return NEVER;
+      })
+    );
   }
 
   setAuthentication(token: string) {
