@@ -1,7 +1,7 @@
 import { inject } from "@angular/core";
 import { AuthService } from "../services/auth.service";
 
-export function initializeAuth(loginUrl: string) {
+export function initializeAuth() {
   const authService = inject(AuthService);
-  return () => authService.getCurrentUser(loginUrl);
+  return () => authService.getCurrentUser();
 }

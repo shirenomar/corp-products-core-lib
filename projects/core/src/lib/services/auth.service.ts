@@ -35,14 +35,14 @@ export class AuthService extends BaseHttpService {
     }
   }
 
-  getCurrentUser(loginUrl: string) {
-    return this.single<JWTDecoded>("", { urlRewrite: "introspection" }).pipe(
+  getCurrentUser() {
+    return this.single<JWTDecoded>("", { urlRewrite: this.appConfig.introspection }).pipe(
       tap((response) => {
         this.userData.set(response);
       }),
       map(() => true),
       catchError(() => {
-        window.location.href = loginUrl;
+        window.location.href = this.appConfig.loginUrl;
         return NEVER;
       })
     );
