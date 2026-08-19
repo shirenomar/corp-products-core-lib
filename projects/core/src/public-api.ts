@@ -13,3 +13,4 @@ export * from './lib/error-config';
 export * from './lib/app-files-config';
 export * from './lib/models/attachment.interface';
 export * from './lib/validators';
+export * from './lib/pipes';
