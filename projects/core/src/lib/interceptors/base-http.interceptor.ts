@@ -32,7 +32,7 @@ export class HttpBaseInterceptor implements HttpInterceptor {
     request: HttpRequest<unknown>,
     next: HttpHandler
   ): Observable<HttpEvent<unknown>> {
-    request = this.requestModifier(request);
+    request = this.requestModifier(request).clone({ withCredentials: true });
 
     const IS_SYSTEM_LOADER_CHECK = request.context.get(IS_SYSTEM_LOADER);
     this.loaderService.setLoading(true, IS_SYSTEM_LOADER_CHECK, request.url);
